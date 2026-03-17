@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0A0B0D;
+      color: #E5E5E5;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #C29558;
+    }
+    .header .logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: #C29558;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: #0A0B0D;
+    }
+    .status {
+      background: #131417;
+      border: 1px solid #23232B;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+    .status-label { color: #888; }
+    .status-value { font-weight: 600; }
+    .status-value.ok { color: #10B981; }
+    .status-value.empty { color: #888; }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary {
+      background: #C29558;
+      color: #0A0B0D;
+    }
+    .btn-secondary {
+      background: #131417;
+      border: 1px solid #23232B;
+      color: #E5E5E5;
+      margin-top: 8px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-row .btn { width: auto; flex: 1; }
+    .hint {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+    .progress {
+      font-size: 12px;
+      color: #C29558;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+    .success {
+      color: #10B981;
+      text-align: center;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .error {
+      color: #EF4444;
+      text-align: center;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .not-bricks {
+      text-align: center;
+      padding: 20px 0;
+      color: #888;
+      font-size: 13px;
+    }
+    .not-bricks a {
+      color: #C29558;
+      text-decoration: none;
+    }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #0A0B0D;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-loading::before {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #0A0B0D;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">B</div>
+    <h1>BRICKS.co : Export</h1>
+  </div>
+
+  <div id="content-not-bricks" class="not-bricks" style="display:none;">
+    <p>Ouvrez <a href="https://app.bricks.co" target="_blank">app.bricks.co</a> et connectez-vous pour exporter vos donnees.</p>
+  </div>
+
+  <div id="content-main" style="display:none;">
+    <div class="status" id="status-box">
+      <div class="status-row">
+        <span class="status-label">Statut</span>
+        <span class="status-value" id="auth-status">...</span>
+      </div>
+    </div>
+
+    <div class="status" id="results-box" style="display:none;">
+      <div class="status-row">
+        <span class="status-label">Projets</span>
+        <span class="status-value ok" id="project-count">0</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Paiements</span>
+        <span class="status-value ok" id="payment-count">0</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Bricks</span>
+        <span class="status-value ok" id="bricks-count">0</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Valeur portefeuille</span>
+        <span class="status-value ok" id="portfolio-value">0</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-fetch">
+      Récupérer les données
+    </button>
+
+    <div class="btn-row" id="export-buttons" style="display:none;">
+      <button class="btn btn-primary" id="btn-csv">
+        Exporter CSV
+      </button>
+      <button class="btn btn-secondary" id="btn-json">
+        Exporter JSON
+      </button>
+    </div>
+
+    <div class="progress" id="progress-text"></div>
+    <div class="success" id="success-msg" style="display:none;"></div>
+    <div class="error" id="error-msg" style="display:none;"></div>
+
+    <p class="hint">
+      CSV : fichier lisible dans Excel / Numbers.<br>
+      JSON : import direct dans AllMyCapital.
+    </p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
